@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Звичайний день індика</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#0b0c10;color:#f4f4f5;font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;padding:18px}
+#app{width:min(650px,100%)}
+.top{display:flex;justify-content:space-between;gap:12px;color:#aaa;font-size:13px;margin-bottom:12px}
+.card{background:#191a1f;border:1px solid #34353c;border-radius:22px;padding:24px;box-shadow:0 16px 40px #0009}
+.card img{display:block;width:100%;height:auto;max-width:100%;object-fit:contain}
+button{display:block;width:100%;border:0;border-radius:13px;padding:16px 14px;margin:7px 0;font-size:16px;font-weight:800;cursor:pointer}
+button:disabled{opacity:.45;cursor:default}
+.option{background:#eee;color:#111}.next{background:#fff;color:#111}.meeting{background:#24252a;color:#fff;border:1px solid #414249;text-align:left}
+.work-choice-card,.calendar-card,.wake-image-card,.breakfast-image-card,.breakfast-result-card,.call-list-image-card,.call-detail-image-card,.laptop-scene-card{padding:0!important;overflow:hidden!important;background:#08090c!important;border:0!important;box-shadow:none!important}
+.work-choice-screen,.menu-poster,.wake-image,.breakfast-image,.breakfast-result,.call-list-image,.call-detail-image,.laptop-scene{position:relative;width:100%;line-height:0;overflow:hidden;border-radius:18px}
+.work-choice-screen img,.menu-poster img,.wake-image img,.breakfast-image img,.breakfast-result img,.call-list-image>img,.call-detail-image img,.laptop-scene img{display:block;width:100%;height:auto;max-width:100%;object-fit:contain}
+.work-choice-hotspot{position:absolute;top:81.5%;height:16%;display:block!important;border:0!important;margin:0!important;padding:0!important;background:transparent!important;border-radius:0!important;cursor:pointer;z-index:50}
+.work-choice-hotspot.home{left:4.5%;width:43%}.work-choice-hotspot.office{left:50%;width:46%}
+.day-hotspots{position:absolute;left:2.5%;right:2.5%;bottom:2.4%;height:20.5%;display:grid;grid-template-columns:repeat(5,1fr);gap:1.1%}
+.day-hotspot{margin:0;padding:0;min-height:0;width:100%;height:100%;border:2px solid transparent;border-radius:10px;background:transparent}
+.wake-hotspot{position:absolute;left:10%;right:10%;bottom:7%;height:11%;border:2px solid transparent;border-radius:18px;background:transparent}
+.breakfast-food-hotspots{position:absolute;left:3.2%;right:3.2%;bottom:1.8%;height:17.5%;display:grid;grid-template-columns:repeat(3,1fr);gap:3.1%}
+.breakfast-food-hotspot{display:block!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;border:2px solid transparent!important;border-radius:16px!important;background:transparent!important}
+.breakfast-work-hotspot{position:absolute;left:7.5%;right:7.5%;bottom:4.7%;height:10.8%;border:2px solid transparent;border-radius:18px;background:transparent}
+.call-list-hotspot{position:absolute;left:7%;right:7%;height:7.9%;border:2px solid transparent;border-radius:18px;background:transparent;padding:0;margin:0;z-index:3}
+.call-progress-overlay{position:absolute;left:25%;right:25%;bottom:4.5%;height:5.8%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:4;pointer-events:none}
+.call-progress-text{font-weight:900;font-size:clamp(13px,3.6vw,20px);color:#f2e7cf;text-shadow:0 2px 4px #000}
+.call-progress-bar{width:100%;height:9px;border:2px solid #6b5a45;border-radius:999px;background:#151515;overflow:hidden;margin-top:5px}
+.call-progress-bar span{display:block;height:100%;background:#d8a447;width:0%;transition:width .2s}
+.call-detail-image-hotspot{cursor:pointer;outline:none;touch-action:manipulation}
+.quest-head{display:flex;justify-content:space-between;font-size:13px;color:#bbb;margin:10px 0 6px}
+.progress{height:8px;background:#303137;border-radius:99px;overflow:hidden;margin:10px 0 16px}
+.progress span{display:block;height:100%;background:#eee}
+.quest-list{display:flex;flex-direction:column;gap:3px}
+.quest-btn{text-align:left;min-height:52px}
+.art{height:310px;border-radius:17px;background:linear-gradient(145deg,#222630,#101116);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.art .turkey{font-size:150px}
+.center{text-align:center}.big{font-size:150px;line-height:1}
+.summary{font-size:18px;line-height:1.15;margin:18px 0}
+@media(max-width:700px){
+ body{padding:0;display:block;background:#08090c}
+ #app{width:100%;max-width:390px;min-height:100svh;margin:0 auto}
+ .top{padding:8px 12px 10px;font-size:12px}
+ .card{width:100%;max-width:390px;min-height:calc(100vh - 58px);border-radius:20px;padding:16px}
+ button{min-height:54px;font-size:15px;margin:5px 0}
+ .art{height:38vh;min-height:235px;max-height:330px}
+ .art .turkey{font-size:125px}
+ .big{font-size:120px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top"><span>🦃 Звичайний день індика</span><span id="clock"></span></div>
+  <div id="screen"></div>
+</div>
+
+<script>
+const screen=document.getElementById('screen'),clock=document.getElementById('clock');
+const S={day:null,work:null,morning:new Set(),afternoon:new Set(),laundry:new Set(),gym:new Set(),fox:null,rest:false,sleep:new Set(),office:new Set()};
+
+const morningMeetings=[
+ ['m1','09:00','Мітинг із начальницею','Як пройшла чергова відпустка начальниці.',''],
+ ['m2','10:15','Італійці 🇮🇹','Як зробити так, щоб більше людей купували квитки.','Треба більше продавати квитків.'],
+ ['m3','11:30','Мітинг, замість якого можна було б працювати','Чому кампанія ще не готова?','Бо ми зараз на мітингу.'],
+ ['m4','12:15','Італійці 🇮🇹','FlixTeleport: чому реліз знову переноситься?','Баги бекенду, пасажири застрягають у текстурах.']
+];
+const afternoonMeetings=[
+ ['a1','14:15','Італійці 🇮🇹','Можна зробити це красивіше?','Можна.'],
+ ['a2','15:30','Непотрібний мітинг для всього тімy','Чи треба щось змінити?','Давайте не будемо зараз.'],
+ ['a3','16:45','Мітинг, який нікому не потрібен','Навіщо ми тут?','Гарне питання.']
+];
+
+function setClock(t){clock.textContent=t}
+function render(body){screen.innerHTML=body;window.scrollTo(0,0)}
+function btn(text,fn,cls='option'){const b=document.createElement('button');b.type='button';b.className=cls;b.textContent=text;if(fn)b.onclick=fn;return b}
+function addButtons(c,items){items.forEach(([t,f,cl])=>c.appendChild(btn(t,f,cl||'option')))}
+function questLayout(title,subtitle,done,total,label,inner){
+ return `<div class="card"><div class="art"><div class="turkey">🦃</div></div>
+ <h2>${title}</h2>${subtitle?`<p>${subtitle}</p>`:''}
+ <div class="quest-head">${label?`<b>${label}</b>`:`<span></span>`}<b>${done}/${total}</b></div>
+ <div class="progress"><span style="width:${Math.round(done/total*100)}%"></span></div>
+ <div class="quest-list">${inner}</div></div>`;
+}
+
+function calendar(){
+ setClock('');
+ render(`<div class="card calendar-card"><div class="menu-poster">
+ <img src="images/cover.png" alt="День індика — вибір дня тижня">
+ <div class="day-hotspots">
+ <button class="day-hotspot" data-day="ПОНЕДІЛОК"></button><button class="day-hotspot" data-day="ВІВТОРОК"></button>
+ <button class="day-hotspot" data-day="СЕРЕДА"></button><button class="day-hotspot" data-day="ЧЕТВЕР"></button>
+ <button class="day-hotspot" data-day="ПʼЯТНИЦЯ"></button></div></div></div>`);
+ document.querySelectorAll('.day-hotspot').forEach(b=>b.onclick=()=>{S.day=b.dataset.day;wake(1)});
+}
+
+function wake(n){
+ const d={
+ 1:{img:'images/alarm_0827.png',alt:'08:27',next:'ЩЕ 5 ХВИЛИН'},
+ 2:{img:'images/alarm_0832.png',alt:'08:32',next:'ЩЕ 5 ХВИЛИНОЧОК'},
+ 3:{img:'images/alarm_0837.png',alt:'08:37',next:'ЧАС ВСТАВАТИ'}
+ }[n];
+ setClock(n===1?'08:27':n===2?'08:32':'08:37');
+ render(`<div class="card wake-image-card"><div class="wake-image">
+ <img src="${d.img}" alt="${d.alt}"><button class="wake-hotspot" id="wakeNext" aria-label="${d.next}"></button>
+ </div></div>`);
+ document.getElementById('wakeNext').onclick=()=>n<3?wake(n+1):breakfast();
+}
+
+function breakfast(){
+ setClock('08:45');
+ render(`<div class="card breakfast-image-card"><div class="breakfast-image">
+ <img src="images/lunch.png" alt="08:45 — Сніданок">
+ <div class="breakfast-food-hotspots">
+ <button class="breakfast-food-hotspot" data-food="🥚"></button>
+ <button class="breakfast-food-hotspot" data-food="🐟"></button>
+ <button class="breakfast-food-hotspot" data-food="🍞"></button>
+ </div></div></div>`);
+ document.querySelectorAll('.breakfast-food-hotspot').forEach(b=>b.onclick=()=>foodConfirm(b.dataset.food));
+}
+function foodConfirm(emoji){
+ const key=emoji==='🥚'?'egg':emoji==='🐟'?'fish':'bread';
+ const imgs={egg:'images/lunch_egg.png',fish:'images/lunch_fish.png',bread:'images/lunch_bread.png'};
+ setClock('08:45');
+ render(`<div class="card breakfast-result-card"><div class="breakfast-result">
+ <img src="${imgs[key]}" alt="Індик їсть"><button class="breakfast-work-hotspot" id="breakfastWork" aria-label="ДО ПРАЦІ"></button>
+ </div></div>`);
+ document.getElementById('breakfastWork').onclick=workChoice;
+}
+function workChoice(){
+ setClock('08:55');
+ render(`<div class="card work-choice-card"><div class="work-choice-screen">
+ <img src="images/home_office.png" alt="Вибір: дім або офіс">
+ <button class="work-choice-hotspot home" id="workHome" aria-label="КОЛЛИТИ З ДОМУ"></button>
+ <button class="work-choice-hotspot office" id="workOffice" aria-label="МЕРЗНУТИ В ОФІСІ"></button>
+ </div></div>`);
+ document.getElementById('workHome').onclick=()=>{S.work='home';morningWork()};
+ document.getElementById('workOffice').onclick=()=>{S.work='office';officeMission()};
+}
+function officeMission(){
+ setClock('08:55');
+ const tasks=[['crowd','Пройти крізь натовп'],['mykyta','Сховатися від Микити-аферіста'],['kyrylo','Знайти Кирила']];
+ const inner=tasks.map(([id,t])=>`<button class="meeting quest-btn" data-office="${id}" ${S.office.has(id)?'disabled':''}>${S.office.has(id)?'✅':'⬜'} ${t}</button>`).join('');
+ render(questLayout('🏢 ДОРОГА В ОФІС','Виконай усі 3 завдання:',S.office.size,3,'ПРОГРЕС',inner));
+ document.querySelectorAll('[data-office]').forEach(b=>b.onclick=()=>{S.office.add(b.dataset.office);officeMission()});
+ if(S.office.size===3)document.querySelector('.quest-list').appendChild(btn('ПРИЙНЯТИ ЧЕРГОВИЙ КОЛ — ТИЦЬ',morningWork,'next'));
+}
+function morningWork(){setClock('09:00');S.morning=new Set();renderCalls('morning')}
+function afternoonWork(){S.afternoon=new Set();renderCalls('afternoon')}
+
+function renderCalls(which){
+ const arr=which==='morning'?morningMeetings:afternoonMeetings;
+ const done=which==='morning'?S.morning:S.afternoon;
+ if(which==='afternoon'){
+  const inner=arr.map((m,i)=>`<button class="meeting quest-btn" data-call="${m[0]}">${done.has(m[0])?'✅':'⬜'} ${i+1}/${arr.length} — ${m[1]} — ${m[2]}</button>`).join('');
+  render(questLayout('💻 РОБОТА ПІСЛЯ ОБІДУ','Пройди всі колли.',done.size,arr.length,'',inner));
+  document.querySelectorAll('[data-call]').forEach(b=>b.onclick=()=>openCall(which,b.dataset.call));
+  return;
+ }
+ const pct=Math.round(done.size/arr.length*100);
+ render(`<div class="card call-list-image-card"><div class="call-list-image">
+ <img src="images/morning_calls.png" alt="Список ранкових коллів">
+ <button class="call-list-hotspot" style="top:55.6%" data-call="m1" aria-label="09:00"></button>
+ <button class="call-list-hotspot" style="top:64%" data-call="m2" aria-label="10:15"></button>
+ <button class="call-list-hotspot" style="top:72.3%" data-call="m3" aria-label="11:30"></button>
+ <button class="call-list-hotspot" style="top:80.6%" data-call="m4" aria-label="12:15"></button>
+ <div class="call-progress-overlay"><div class="call-progress-text">ПРОГРЕС: ${done.size}/${arr.length}</div>
+ <div class="call-progress-bar"><span style="width:${pct}%"></span></div></div></div></div>`);
+ document.querySelectorAll('[data-call]').forEach(b=>b.onclick=()=>openCall(which,b.dataset.call));
+}
+
+function openCall(which,id){
+ const arr=which==='morning'?morningMeetings:afternoonMeetings,call=arr.find(x=>x[0]===id);
+ if(!call)return;
+ setClock(call[1]);
+ if(which==='morning'){
+  const files={m1:'home_call_0900.png',m2:'home_call_1015.png',m3:'home_call_1130.png',m4:'home_call_1215.png'};
+  const img=files[id];
+  render(`<div class="card call-detail-image-card"><div class="call-detail-image call-detail-image-hotspot" data-complete-call="1">
+  <img src="images/${img}" alt="${call[1]} — ${call[2]}"></div></div>`);
+  document.querySelector('[data-complete-call]').onclick=()=>completeCall(which,id);
+  return;
+ }
+ render(`<div class="card"><div class="art"><div class="turkey">🦃😔</div></div>
+ <h2>${call[1]} — ${call[2]}</h2><p>${call[3]}</p><p><b>${call[4]}</b></p>
+ <button class="next" data-complete-call="1">ЗАВЕРШИТИ КОЛЛ ✔️</button></div>`);
+ document.querySelector('[data-complete-call]').onclick=()=>completeCall(which,id);
+}
+function completeCall(which,id){
+ const arr=which==='morning'?morningMeetings:afternoonMeetings,set=which==='morning'?S.morning:S.afternoon;
+ set.add(id);
+ if(set.size>=arr.length){which==='morning'?morningFinished():finishWork();return}
+ renderCalls(which);
+}
+function morningFinished(){S.work==='home'?lunchHome():lunchOffice()}
+function lunchHome(){
+ setClock('13:00');
+ render(`<div class="card breakfast-image-card"><div class="breakfast-image">
+ <img src="images/lunch.png" alt="13:00 — Обід">
+ <div class="breakfast-food-hotspots"><button class="breakfast-food-hotspot" data-food="🥚"></button>
+ <button class="breakfast-food-hotspot" data-food="🐟"></button><button class="breakfast-food-hotspot" data-food="🍞"></button></div></div></div>`);
+ document.querySelectorAll('.breakfast-food-hotspot').forEach(b=>b.onclick=()=>lunchConfirm(b.dataset.food));
+}
+function lunchConfirm(emoji){
+ const key=emoji==='🥚'?'egg':emoji==='🐟'?'fish':'bread';
+ const imgs={egg:'images/lunch_egg.png',fish:'images/lunch_fish.png',bread:'images/lunch_bread.png'};
+ setClock('14:14');
+ render(`<div class="card breakfast-result-card"><div class="breakfast-result">
+ <img src="${imgs[key]}" alt="14:14 — Обід"><button class="breakfast-work-hotspot" id="lunchNext" aria-label="ОЙ ЛІШЕНЬКО, ЗНОВУ ХТОСЬ ДЗВОНИТЬ!!!"></button>
+ </div></div>`);
+ document.getElementById('lunchNext').onclick=afternoonWork;
+}
+function lunchOffice(){
+ setClock('13:00');
+ render(`<div class="card"><h2>🍽️ ОБІД В ОФІСІ</h2><p><b>Що сьогодні їмо?</b></p><div id="f"></div></div>`);
+ addButtons(document.getElementById('f'),[['🍌 Банан',()=>officeLunchConfirm('🍌')],['🥪 Лідл',()=>officeLunchConfirm('🥪')],['🥡 Азіатська їжа',()=>officeLunchConfirm('🥡')]]);
+}
+function officeLunchConfirm(emoji){
+ setClock('13:05');
+ render(`<div class="card"><div class="art"><div class="turkey">🦃😔</div><div style="font-size:62px">${emoji}</div></div>
+ <h1>Встиг?</h1><button class="next" id="officeLunchNext">ПРИЙНЯТИ ЧЕРГОВИЙ КОЛ — ТИЦЬ</button></div>`);
+ document.getElementById('officeLunchNext').onclick=afternoonWork;
+}
+function finishWork(){afterWorkDay()}
+function afterWorkDay(){setClock('18:30');postWork()}
+function postWork(){if(['ВІВТОРНИК','ЧЕТВЕР'].includes(S.day))gym();else dinner()}
+function gym(){
+ setClock('19:00');
+ render(`<div class="card"><div class="art"><div class="turkey">🦃🏋️</div></div><h2>🏋️ ЧЕРГА ДО МАКФІТ</h2>
+ <button class="next" id="q">ЧЕРГА САМА ЗА СЕБЕ НЕ ПОСТОЇТЬ</button></div>`);
+ document.getElementById('q').onclick=gymStart;
+}
+function gymStart(){
+ S.gym=new Set();
+ render(questLayout('🏋️ СПОРТЗАЛ МАКФІТ','Виконай усі 3 вправи:',S.gym.size,3,'ТРЕНУВАННЯ',
+ [['run','Бігова доріжка'],['weights','Гантелі'],['abs','Прес']].map(([id,t])=>`<button class="meeting quest-btn" data-gym="${id}">⬜ ${t}</button>`).join('')));
+ document.querySelectorAll('[data-gym]').forEach(b=>b.onclick=()=>{S.gym.add(b.dataset.gym);if(S.gym.size===3)dinner();else gymStart()});
+}
+function dinner(){
+ setClock('20:30');
+ render(`<div class="card breakfast-image-card"><div class="breakfast-image">
+ <img src="images/lunch.png" alt="20:30 — Вечеря">
+ <div class="breakfast-food-hotspots"><button class="breakfast-food-hotspot" data-food="🥚"></button>
+ <button class="breakfast-food-hotspot" data-food="🐟"></button><button class="breakfast-food-hotspot" data-food="🍞"></button></div></div></div>`);
+ document.querySelectorAll('.breakfast-food-hotspot').forEach(b=>b.onclick=()=>dinnerFood(b.dataset.food));
+}
+function dinnerFood(emoji){
+ const key=emoji==='🥚'?'egg':emoji==='🐟'?'fish':'bread';
+ const imgs={egg:'images/lunch_egg.png',fish:'images/lunch_fish.png',bread:'images/lunch_bread.png'};
+ render(`<div class="card breakfast-result-card"><div class="breakfast-result"><img src="${imgs[key]}" alt="Вечеря">
+ <button class="breakfast-work-hotspot" id="dinnerNext" aria-label="А ЩО ДАЛІ?"></button></div></div>`);
+ document.getElementById('dinnerNext').onclick=dinnerAfterFood;
+}
+function dinnerAfterFood(){
+ setClock('21:00');
+ render(`<div class="card"><div class="art"><div class="turkey">🦃</div><div style="font-size:110px">👩</div></div>
+ <h1>ЧАС ЗУСТРІТИСЯ З ЛІСОЮ!</h1><div id="lm"></div></div>`);
+ addButtons(document.getElementById('lm'),[['💻 ЗУСТРІТИ ЛІСУ В НОУТІ',()=>lisaMeeting('laptop')],['🌳 ЗУСТРІТИ ЛІСУ В ПАРКУ',()=>lisaMeeting('park')]]);
+}
+function lisaMeeting(where){
+ if(where==='park'){
+  render(`<div class="card"><div class="art"><div class="turkey">🦃</div><div style="font-size:100px">🌳🦊</div></div>
+  <h1>ЛІСА ДЕСЬ ТУТ…</h1><p>🦃 Індик шукає Лісу, а вона ховається та каже: «БЕ-БЕ-БЕ 😜»</p>
+  <button class="next" id="parkNext">ЛІСУ НЕ ЗНАЙШОВ — ДОДОМУ ПІШОВ!</button></div>`);
+  document.getElementById('parkNext').onclick=()=>restChoice(true);return;
+ }
+ render(`<div class="card laptop-scene-card"><div class="laptop-scene">
+ <img src="images/image_15.png" alt="Індик за ноутбуком і Slowfoxes">
+ <button class="image-hotspot" id="slowfoxesNext"></button></div></div>`);
+ document.getElementById('slowfoxesNext').onclick=()=>restChoice(false);
+}
+function restChoice(park){
+ setClock('21:30');
+ const items=[['📺 МАЙСТЕР ШЕФ',night],['📰 НОВИНИ',night],['🐈 КОТИКИ',night]];
+ if(park)items.push(['🦊 SLOWFOXES',night]);
+ render(`<div class="card"><h2>📱 ВІДПОЧИНОК</h2><p>Що робимо?</p><div id="r"></div></div>`);
+ addButtons(document.getElementById('r'),items);
+}
+function night(){
+ setClock('00:50');
+ render(`<div class="card"><div class="art"><div class="turkey">🦃😱</div></div><h1>ВЖЕ 00:50!</h1>
+ <button class="next" id="sleepStart">ТЕРМІНОВО ВКЛАСТИ ІНДИКА СПАТИ!</button></div>`);
+ document.getElementById('sleepStart').onclick=sleepQuest;
+}
+function sleepQuest(){
+ S.sleep=new Set();
+ const tasks=[['teeth','🪥 Почистити зуби'],['alarm','⏰ Поставити будильник'],['light','💡 Вимкнути світло']];
+ const inner=tasks.map(([id,t])=>`<button class="meeting quest-btn" data-sleep="${id}">⬜ ${t}</button>`).join('');
+ render(questLayout('🌙 ПІДГОТОВКА ДО СНУ','Виконай усі 3 справи:',0,3,'СОН',inner));
+ document.querySelectorAll('[data-sleep]').forEach(b=>b.onclick=()=>{S.sleep.add(b.dataset.sleep);if(S.sleep.size===3)daySummary();else sleepQuest()});
+}
+function daySummary(){
+ setClock('00:55');
+ render(`<div class="card center"><div class="art"><div class="turkey">🦃😏</div></div>
+ <h1>ДЕНЬ ЗАВЕРШЕНО!</h1><p>Ти прожив ще один «абсолютно звичайний день».</p>
+ <button class="next" id="summaryNext">…ЧИ НІ?</button></div>`);
+ document.getElementById('summaryNext').onclick=surprise;
+}
+function surprise(){
+ render(`<div class="card center"><div class="art"><div class="turkey">🦃🔍</div></div>
+ <h1>ТИ ДУМАВ, ЦЕ БУВ ПРОСТО ЗВИЧАЙНИЙ ДЕНЬ?</h1><button class="next" id="know">ТАК НІ МОЖЛИВО</button></div>`);
+ document.getElementById('know').onclick=notNormal;
+}
+function notNormal(){
+ render(`<div class="card center"><div class="art"><div class="turkey">🦃😏</div></div>
+ <h1>А ОСЬ І НІ!</h1><p><b>Сьогодні день зовсім не звичайний.</b></p><h2>І ЗНАЄШ ЧОМУ?</h2>
+ <button class="next" id="whyBirthday">АНУ?</button></div>`);
+ document.getElementById('whyBirthday').onclick=birthday;
+}
+function birthday(){
+ render(`<div class="card center"><div class="art"><div class="turkey">🦃🎂</div></div>
+ <h1>ТОМУ ЩО У ТЕБЕ СЬОГОДНІ ДЕНЬ НАРОДЖЕННЯ!</h1><button class="next" id="birthdayWhat">І ШО?</button></div>`);
+ document.getElementById('birthdayWhat').onclick=birthdayGift;
+}
+function birthdayGift(){
+ render(`<div class="card center"><div class="art"><div class="turkey">🦃🎁</div></div>
+ <h1>НА ТЕБЕ ЧЕКАЄ ПОДАРУНОК</h1><button class="next" id="gift">ДАВАЙ ВЖЕ ЙОГО СЮДИ</button></div>`);
+ document.getElementById('gift').onclick=finalGift;
+}
+function finalGift(){birthdayGift()}
+
+calendar();
+</script>
+</body>
+</html>

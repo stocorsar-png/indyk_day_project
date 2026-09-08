@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Звичайний день індика</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#0b0c10;color:#f4f4f5;font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;padding:18px}
+#app{width:min(650px,100%)}
+.top{display:flex;justify-content:space-between;gap:12px;color:#aaa;font-size:13px;margin-bottom:12px}
+.card{background:#191a1f;border:1px solid #34353c;border-radius:22px;padding:24px;box-shadow:0 16px 40px #0009}
+.art{height:310px;border-radius:17px;background:linear-gradient(145deg,#222630,#101116);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.art .turkey{font-size:150px;filter:drop-shadow(0 15px 10px #0009)}
+.scene-label{position:absolute;top:14px;left:16px;color:#aaa;font-size:13px;letter-spacing:.04em}
+h1,h2{margin:0 0 12px;line-height:1.12}
+h1{font-size:31px}h2{font-size:24px}
+p{line-height:1.45;color:#ddd}
+button{display:block;width:100%;border:0;border-radius:13px;padding:16px 14px;margin:7px 0;font-size:16px;font-weight:800;cursor:pointer;transition:.15s}
+button:hover{transform:translateY(-1px)}
+button:active{transform:scale(.985)}
+button:disabled{opacity:.45;cursor:default;transform:none}
+.option{background:#eee;color:#111}.next{background:#fff;color:#111}.meeting{background:#24252a;color:#fff;border:1px solid #414249;text-align:left}
+.done{opacity:.42}.warning{background:#281a1a;border:1px solid #653d3d;border-radius:14px;padding:14px}
+.progress{height:8px;background:#303137;border-radius:99px;overflow:hidden;margin:10px 0 16px}.progress span{display:block;height:100%;background:#eee}
+.calendar{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}.day{min-height:92px;background:#23242a;color:#fff;border:1px solid #414249;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}.day strong{display:block;font-size:22px}.day small{display:block;color:#aaa;margin-top:6px}.day:last-child{grid-column:1/-1}
+.food{font-size:62px;text-align:center;margin:5px 0}
+.center{text-align:center}.big{font-size:150px;line-height:1}
+.summary{font-size:18px;line-height:1.15;margin:18px 0}.summary p{margin:8px 0;color:#f4f4f5}\n
+/* Work choice: full iPhone artwork with functional invisible hotspots */
+.work-choice-card{padding:0!important;overflow:hidden;background:transparent!important;border:0!important;box-shadow:none!important}
+.work-choice-screen{position:relative;width:100%;line-height:0;overflow:hidden;border-radius:22px}
+.work-choice-screen img{display:block;width:100%;height:auto;max-width:100%;object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.work-choice-hotspot{position:absolute;top:81.5%;height:16%;display:block!important;border:0!important;margin:0!important;padding:0!important;background:transparent!important;border-radius:0!important;cursor:pointer;z-index:50;transform:none!important;pointer-events:auto!important;box-shadow:none!important}
+.work-choice-hotspot.home{left:4.5%;width:43%}
+.work-choice-hotspot.office{left:50%;width:46%}
+.work-choice-hotspot:focus-visible{outline:3px solid #fff;outline-offset:-5px}
+
+/* iPhone / mobile game layout */
+@media (max-width:700px){
+ body{padding:0;display:block;background:#08090c;overflow-x:hidden;-webkit-text-size-adjust:100%}
+ #app{width:100%;max-width:390px;min-height:100svh;margin:0 auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+ .top{padding:8px 12px 10px;font-size:12px}
+ .card{width:100%;max-width:390px;margin:0 auto}
+ .card img{display:block;width:100%;height:auto;aspect-ratio:1080/2340;max-width:100%;object-fit:contain}
+ .menu-poster,.laptop-scene,.wake-image,.breakfast-image,.breakfast-result{width:100%;max-width:390px}
+ .menu-poster img,.laptop-scene img,.wake-image img,.breakfast-image img,.breakfast-result img{width:100%;height:auto;object-fit:contain}
+ .day-hotspot,.image-hotspot,.wake-hotspot,.breakfast-food-hotspot,.breakfast-work-hotspot{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+ .top{padding:8px 12px 10px;font-size:12px}
+ .card{min-height:calc(100vh - 58px);border-radius:20px;padding:16px;display:flex;flex-direction:column;justify-content:flex-start}
+ .art{height:38vh;min-height:235px;max-height:330px;margin-bottom:16px}
+ .art .turkey{font-size:125px}
+ h1{font-size:26px}h2{font-size:21px}
+ p{font-size:15px}
+ button{min-height:54px;font-size:15px;margin:5px 0}
+ .calendar{gap:8px}
+ .day{min-height:76px}
+ .big{font-size:120px}
+}
+.quest-head{display:flex;justify-content:space-between;font-size:13px;color:#bbb;margin:10px 0 6px}.small{font-size:12px;color:#aaa}.quest-card{overflow:hidden}.quest-art{height:210px;min-height:210px}.quest-head{display:flex;justify-content:space-between;font-size:13px;color:#bbb;margin:10px 0 6px}.quest-list{display:flex;flex-direction:column;gap:3px}.quest-btn{text-align:left;min-height:52px}.small{font-size:12px;color:#aaa}
+.calendar-card{padding:0;overflow:hidden;background:#0e1015}
+.menu-poster{position:relative;width:100%;line-height:0;overflow:hidden;border-radius:18px}
+.menu-poster img{display:block;width:100%;height:auto;aspect-ratio:1080/2340;max-width:100%;object-fit:contain}
+.day-hotspots{position:absolute;left:2.5%;right:2.5%;bottom:2.4%;height:20.5%;display:grid;grid-template-columns:repeat(5,1fr);gap:1.1%}
+.day-hotspot{margin:0;padding:0;min-height:0;width:100%;height:100%;border:2px solid transparent;border-radius:10px;background:transparent;cursor:pointer}
+.day-hotspot:focus-visible{outline:3px solid #fff;outline-offset:-3px;background:#ffffff20}
+.day-hotspot:active{background:#ffffff18;border-color:#fff}
+@media (hover:hover) and (pointer:fine){.day-hotspot:hover{background:#ffffff12;border-color:#ffffff66}}
+@media (max-width:700px){
+ .calendar-card{padding:0;border-radius:18px}
+ .menu-poster{border-radius:16px}
+ .day-hotspots{bottom:2.2%;height:20.2%;left:2.3%;right:2.3%;gap:1%}
+ .day-hotspot{border-radius:8px}
+}
+
+
+.laptop-scene-card{padding:0!important;overflow:hidden!important;background:#101116!important}
+.laptop-scene{position:relative;width:100%;line-height:0;overflow:hidden;border-radius:18px}
+.laptop-scene img{display:block;width:100%;height:auto;max-width:100%}
+.image-hotspot{position:absolute;left:14.5%;right:14.5%;bottom:4.7%;height:10.8%;border:2px solid transparent;border-radius:18px;background:transparent;cursor:pointer}
+.image-hotspot:active{background:#ffffff18;border-color:#fff}
+@media (hover:hover) and (pointer:fine){.image-hotspot:hover{background:#ffffff0d;border-color:#ffffff55}}
+@media (hover:hover) and (pointer:fine){.image-hotspot:hover{background:#ffffff0d;border-color:#ffffff55}}
+
+.wake-image-card{padding:0!important;overflow:hidden!important;background:#0b0c10!important}
+.wake-image{position:relative;width:100%;line-height:0;overflow:hidden;border-radius:18px}
+.wake-image img{display:block;width:100%;height:auto;aspect-ratio:1080/2340;max-width:100%;object-fit:contain}
+.wake-hotspot{position:absolute;left:10%;right:10%;bottom:7%;height:11%;border:2px solid transparent;border-radius:18px;background:transparent;cursor:pointer;touch-action:manipulation}
+.wake-hotspot:active{background:#fff2;border-color:#fff8}
+@media (hover:hover) and (pointer:fine){.wake-hotspot:hover{background:#fff1;border-color:#fff5}}
+
+.breakfast-image-card{padding:0!important;overflow:hidden!important;background:#08090c!important}
+.breakfast-image{position:relative;width:100%;line-height:0;overflow:hidden;border-radius:18px}
+.breakfast-image img{display:block;width:100%;height:auto;aspect-ratio:1080/2340;max-width:100%;object-fit:contain}
+.breakfast-food-hotspots{position:absolute;left:3.2%;right:3.2%;bottom:1.8%;height:17.5%;display:grid;grid-template-columns:repeat(3,1fr);gap:3.1%}
+.breakfast-food-hotspot{display:block!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;border:2px solid transparent!important;border-radius:16px!important;background:transparent!important;cursor:pointer!important;touch-action:manipulation}
+.breakfast-food-hotspot:active{background:#fff2!important;border-color:#fff8!important}
+
+.breakfast-result-card{padding:0!important;overflow:hidden!important;background:#08090c!important}
+.breakfast-result{position:relative;width:100%;line-height:0;overflow:hidden;border-radius:18px}
+.breakfast-result img{display:block;width:100%;height:auto;aspect-ratio:1080/2340;max-width:100%;object-fit:contain}
+.breakfast-work-hotspot{position:absolute;left:7.5%;right:7.5%;bottom:4.7%;height:10.8%;border:2px solid transparent;border-radius:18px;background:transparent;cursor:pointer;touch-action:manipulation}
+.breakfast-work-hotspot:active{background:#ffffff18;border-color:#fff}
+@media (hover:hover) and (pointer:fine){.breakfast-work-hotspot:hover{background:#ffffff0d;border-color:#ffffff55}}
+@media (hover:hover) and (pointer:fine){.breakfast-food-hotspot:hover{background:#ffffff10!important;border-color:#ffffff55!important}}
+
+/* v34 — true iPhone canvas behavior: preserve the complete artwork, never crop it. */
+@media (max-width:430px){
+  html,body{width:100%;min-width:0;max-width:100%;}
+  .laptop-scene-card,.wake-image-card,.breakfast-image-card,.breakfast-result-card,.calendar-card{
+    width:100%;max-width:390px;margin-left:auto;margin-right:auto;
+  }
+  .laptop-scene,.wake-image,.breakfast-image,.breakfast-result,.menu-poster{
+    overflow:hidden;
+  }
+  .laptop-scene img,.wake-image img,.breakfast-image img,.breakfast-result img,.menu-poster img{
+    display:block;width:100%;height:auto;max-width:none;object-fit:contain;
+  }
+}
+
+.call-list-image-card{padding:0!important;overflow:hidden!important;background:#08090c!important}
+.call-list-image{position:relative;width:100%;line-height:0;overflow:hidden;border-radius:18px}
+.call-list-image>img{display:block;width:100%;height:auto;aspect-ratio:1080/2340;max-width:100%;object-fit:contain}
+.call-list-hotspot{position:absolute;left:7%;right:7%;height:7.9%;border:2px solid transparent;border-radius:18px;background:transparent;cursor:pointer;touch-action:manipulation;z-index:3;padding:0!important;margin:0!important}
+.call-list-hotspot:active{background:#ffffff22;border-color:#ffffffaa}
+@media (hover:hover) and (pointer:fine){.call-list-hotspot:hover{background:#ffffff12;border-color:#ffffff66}}
+.call-progress-overlay{position:absolute;left:25%;right:25%;bottom:4.5%;height:5.8%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:4;pointer-events:none}
+.call-progress-text{font-weight:900;font-size:clamp(13px,3.6vw,20px);color:#f2e7cf;text-shadow:0 2px 4px #000;line-height:1.1}
+.call-progress-bar{width:100%;height:9px;border:2px solid #6b5a45;border-radius:999px;background:#151515;overflow:hidden;margin-top:5px;box-shadow:0 2px 5px #000}
+.call-progress-bar span{display:block;height:100%;background:#d8a447;width:0%;transition:width .2s ease}
+@media(max-width:430px){.call-list-image-card{width:100%;max-width:390px;margin-left:auto;margin-right:auto}.call-list-image{overflow:hidden}.call-list-image>img{width:100%;height:auto;max-width:none;object-fit:contain}.call-list-hotspot{left:7%;right:7%}}
+
+
+.call-detail-image-card{padding:0!important;overflow:hidden!important;background:#08090c!important}
+.call-detail-image{position:relative;width:100%;line-height:0;overflow:hidden;border-radius:18px}
+.call-detail-image img{display:block;width:100%;height:auto;aspect-ratio:1080/2340;max-width:100%;object-fit:contain}
+.call-detail-image-hotspot{cursor:pointer;outline:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.call-detail-image-hotspot:active{filter:brightness(.96)}
+.call-detail-finish-hotspot{
+  position:absolute;
+  left:7%;
+  right:7%;
+  bottom:4%;
+  height:13%;
+  margin:0!important;
+  padding:0!important;
+  border:2px solid transparent!important;
+  border-radius:18px!important;
+  background:transparent!important;
+  cursor:pointer;
+  z-index:10;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.call-detail-finish-hotspot:active{background:#ffffff18!important;border-color:#fff8!important}
+@media (hover:hover) and (pointer:fine){
+  .call-detail-finish-hotspot:hover{background:#ffffff0d!important;border-color:#ffffff55!important}
+}
+
+.call-detail-image-hotspot:focus-visible{outline:3px solid #fff;outline-offset:-4px}
+.call-detail-complete{margin-top:12px!important}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top"><span>🦃 Звичайний день індика</span><span id="clock"></span></div>
+  <div id="screen"></div>
+</div>
+<script>
+const screen=document.getElementById('screen'),clock=document.getElementById('clock');
+const S={day:null,work:null,morning:new Set(),afternoon:new Set(),laundry:new Set(),gym:new Set(),fox:null,rest:false};
+
+const morningMeetings=[
+['m1','09:00','Мітинг із начальницею','Як пройшла чергова відпустка начальниці.',''],
+['m2','10:15','Італійці 🇮🇹','Як зробити так, щоб більше людей купували квитки.','Треба більше продавати квитків.'],
+['m3','11:30','Мітинг, замість якого можна було б працювати','Чому кампанія ще не готова?','Бо ми зараз на мітингу.'],
+['m4','12:15','Італійці 🇮🇹','FlixTeleport: чому реліз знову переноситься?','Баги бекенду, пасажири застрягають у текстурах.']
+];
+const afternoonMeetings=[
+['a1','14:15','Італійці 🇮🇹','Можна зробити це красивіше?','Можна.'],
+['a2','15:30','Непотрібний мітинг для всього тімy','Чи треба щось змінити?','Давайте не будемо зараз.'],
+['a3','16:45','Мітинг, який нікому не потрібен','Навіщо ми тут?','Гарне питання.']
+];
+
+function setClock(t){clock.textContent=t}
+
+function btn(text,fn,cls='option'){
+ const b=document.createElement('button');
+ b.type='button';
+ b.className=cls;
+ b.textContent=text;
+ if(fn)b.addEventListener('click',fn);
+ return b;
+}
+function addButtons(container,items){
+ items.forEach(([text,fn,cls])=>container.appendChild(btn(text,fn,cls||'option')));
+}
+
+function questLayout(title,subtitle,done,total,label,inner){
+ return `<div class="card quest-card">
+   <div class="art quest-art"><div class="turkey">🦃</div></div>
+   <h2>${title}</h2>${subtitle?`<p>${subtitle}</p>`:''}
+   <div class="quest-head">${label?`<b>${label}</b>`:`<span></span>`}<b>${done}/${total}</b></div>
+   <div class="progress"><span style="width:${Math.round(done/total*100)}%"></span></div>
+   <div class="quest-list">${inner}</div>
+ </div>`;
+}
+
+function render(body){
+ screen.innerHTML=body;
+ window.scrollTo(0,0);
+}
+
+screen.addEventListener('click',function(e){
+ const b=e.target.closest('[data-complete-call]');
+ if(!b)return;
+ e.preventDefault();
+ e.stopPropagation();
+ completeCall(b.dataset.callWhich,b.dataset.callId);
+});
+
+screen.addEventListener('keydown',function(e){
+ if(e.key!=='Enter' && e.key!==' ')return;
+ const b=e.target.closest('[data-complete-call]');
+ if(!b)return;
+ e.preventDefault();
+ completeCall(b.dataset.callWhich,b.dataset.callId);
+});
+
+function calendar(){
+ document.querySelector('.top').style.display='none';
+ setClock('');
+ render(`<div class="card calendar-card">
+   <div class="menu-poster">
+     <img src="images/image_01.png" alt="День індика — вибір дня тижня">
+     <div class="day-hotspots" aria-label="Оберіть день">
+       <button type="button" class="day-hotspot" data-day="ПОНЕДІЛОК" aria-label="Понеділок"></button>
+       <button type="button" class="day-hotspot" data-day="ВІВТОРОК" aria-label="Вівторок"></button>
+       <button type="button" class="day-hotspot" data-day="СЕРЕДА" aria-label="Середа"></button>
+       <button type="button" class="day-hotspot" data-day="ЧЕТВЕР" aria-label="Четвер"></button>
+       <button type="button" class="day-hotspot" data-day="ПʼЯТНИЦЯ" aria-label="Пʼятниця"></button>
+     </div>
+   </div>
+ </div>`);
+ document.querySelectorAll('.day-hotspot').forEach(b=>{
+   b.addEventListener('click',()=>{
+     S.day=b.dataset.day;
+     wake(1);
+   });
+ });
+}
+
+function wake(n){
+ const screens={
+   1:{img:"images/image_02.png",alt:"08:27 — індик спить, за вікном вантажна машина, шум 6 з 10",next:"ЩЕ 5 ХВИЛИН"},
+   2:{img:null,alt:"08:32 — індик спить, за вікном натовп підлітків, шум 8 з 10",next:"ЩЕ 5 ХВИЛИНОЧОК"},
+   3:{img:"images/image_03.png",alt:"08:37 — переляканий індик, за вікном немовля, шум 12 з 10",next:"ЧАС ВСТАВАТИ"}
+ };
+ const d=screens[n]||screens[1];
+ setClock(n===1?'08:27':n===2?'08:32':'08:37');
+ document.querySelector('.top').style.display='none';
+
+ if(d.img){
+   render(`<div class="card wake-image-card">
+     <div class="wake-image">
+       <img src="${d.img}" alt="${d.alt}">
+       <button type="button" class="wake-hotspot" id="wakeNext" aria-label="${d.next}"></button>
+     </div>
+   </div>`);
+ }else{
+   // Keep the already integrated 08:32 screen from v29.
+   const oldUri = "images/image_04.png";
+   render(`<div class="card wake-image-card">
+     <div class="wake-image">
+       <img src="${oldUri}" alt="${d.alt}">
+       <button type="button" class="wake-hotspot" id="wakeNext" aria-label="${d.next}"></button>
+     </div>
+   </div>`);
+ }
+ const b=document.getElementById('wakeNext');
+ if(b)b.addEventListener('click',()=>n<3?wake(n+1):breakfast(),{once:true});
+}
+
+function breakfast(){
+ setClock('08:45');
+ render(`<div class="card breakfast-image-card">
+   <div class="breakfast-image">
+     <img src="images/image_05.jpg" alt="08:45 — Сніданок: індик обирає їжу з холодильника">
+     <div class="breakfast-food-hotspots">
+       <button type="button" class="breakfast-food-hotspot" data-food="🥚" aria-label="Яйце"></button>
+       <button type="button" class="breakfast-food-hotspot" data-food="🐟" aria-label="Риба"></button>
+       <button type="button" class="breakfast-food-hotspot" data-food="🍞" aria-label="Хліб"></button>
+     </div>
+   </div>
+ </div>`);
+ document.querySelectorAll('.breakfast-food-hotspot').forEach(b=>b.addEventListener('click',()=>foodConfirm(b.dataset.food,'',true),{once:true}));
+}
+function foodConfirm(emoji,name,breakfastMode){
+ if(!breakfastMode){ return; }
+ const key=emoji==='🥚'?'egg':emoji==='🐟'?'fish':'bread';
+ const imgs={
+   egg:"images/image_06.png",
+   fish:"images/image_07.png",
+   bread:"images/image_08.png"
+ };
+ setClock('08:45');
+ document.querySelector('.top').style.display='none';
+ render(`<div class="card breakfast-result-card">
+   <div class="breakfast-result">
+     <img src="${imgs[key]}" alt="08:45 — індик їсть ${name}">
+     <button type="button" class="breakfast-work-hotspot" id="breakfastWork" aria-label="ДО ПРАЦІ"></button>
+   </div>
+ </div>`);
+ document.getElementById('breakfastWork').addEventListener('click',()=>workChoice(),{once:true});
+}
+
+function workChoice(){
+ setClock('08:55');
+ document.querySelector('.top').style.display='none';
+ const workChoiceImg='images/image_09.png';
+ render(`<div class="card work-choice-card">
+   <div class="work-choice-screen">
+     <img src="${workChoiceImg}" alt="08:55 — вибір: коллити з дому або мерзнути в офісі">
+     <button type="button" class="work-choice-hotspot home" id="workHome" aria-label="КОЛЛИТИ З ДОМУ"></button>
+     <button type="button" class="work-choice-hotspot office" id="workOffice" aria-label="МЕРЗНУТИ В ОФІСІ"></button>
+   </div>
+ </div>`);
+ document.getElementById('workHome').addEventListener('click',(e)=>{e.preventDefault();e.stopPropagation();S.work='home';morningWork()},{once:true});
+ document.getElementById('workOffice').addEventListener('click',(e)=>{e.preventDefault();e.stopPropagation();S.work='office';officeMission()},{once:true});
+}
+function officeMission(){
+ setClock('08:55'); if(!S.office)S.office=new Set();
+ const tasks=[['crowd','🚶 Пройти крізь натовп'],['mykyta','👤 Сховатися від Микити-аферіста'],['kyrylo','🔎 Знайти Кирила']];
+ const inner=tasks.map(([id,t])=>`<button class="meeting quest-btn" data-office="${id}" ${S.office.has(id)?'disabled':''}>${S.office.has(id)?'✅':'⬜'} ${t}</button>`).join('');
+ render(questLayout('🏢 ДОРОГА В ОФІС','Виконай усі 3 завдання:',S.office.size,3,'ПРОГРЕС',inner));
+ document.querySelectorAll('[data-office]').forEach(b=>b.onclick=()=>{S.office.add(b.dataset.office);officeMission()});
+ if(S.office.size===3)document.querySelector('.quest-list').appendChild(btn('ПРИЙНЯТИ ЧЕРГОВИЙ КОЛ — ТИЦЬ',morningWork,'next'));
+}
+
+function morningWork(){
+ setClock('09:00');S.morning=new Set();
+ renderCalls('morning');
+}
+function afternoonWork(){
+  S.afternoon=new Set();
+  renderCalls('afternoon');
+}
+function renderCalls(which){
+ const arr=which==='morning'?morningMeetings:afternoonMeetings,done=which==='morning'?S.morning:S.afternoon;
+ setClock(which==='morning'?'09:00':'13:30–18:00');
+ if(which!=='morning'){
+   const inner=arr.map((m,i)=>`<button class="meeting quest-btn" data-call="${m[0]}" ${done.has(m[0])?'disabled':''}>${done.has(m[0])?'✅':'⬜'} ${i+1}/${arr.length} — ${m[1]} — ${m[2]}</button>`).join('');
+   render(questLayout(`💻 РОБОТА ПІСЛЯ ОБІДУ`,'Пройди всі колли.',done.size,arr.length,'',inner));
+   document.querySelectorAll('[data-call]').forEach(b=>b.onclick=()=>openCall(which,b.dataset.call));
+   return;
+ }
+ const pct=Math.round(done.size/arr.length*100);
+ render(`<div class="card call-list-image-card">
+   <div class="call-list-image">
+     <img src="images/image_10.png" alt="Робота — список ранкових коллів 09:00–13:30">
+     <button type="button" class="call-list-hotspot" style="top:55.6%" data-call="m1" aria-label="09:00 — Мітинг із начальницею"></button>
+     <button type="button" class="call-list-hotspot" style="top:64.0%" data-call="m2" aria-label="10:15 — Італійці"></button>
+     <button type="button" class="call-list-hotspot" style="top:72.3%" data-call="m3" aria-label="11:30 — Мітинг, замість якого можна було б працювати"></button>
+     <button type="button" class="call-list-hotspot" style="top:80.6%" data-call="m4" aria-label="12:15 — Італійці"></button>
+     <div class="call-progress-overlay">
+       <div class="call-progress-text">ПРОГРЕС: ${done.size}/${arr.length}</div>
+       <div class="call-progress-bar"><span style="width:${pct}%"></span></div>
+     </div>
+   </div>
+ </div>`);
+ document.querySelectorAll('[data-call]').forEach(b=>b.onclick=(e)=>{e.preventDefault();e.stopPropagation();openCall(which,b.dataset.call)});
+}
+
+
+function openCall(which,id){
+ const arr=which==='morning'?morningMeetings:afternoonMeetings;
+ const call=arr.find(x=>x[0]===id);
+ if(!call)return;
+ setClock(call[1]);
+ if(which==='morning' && id==='m1'){
+   const callImg='images/image_11.png';
+   render(`<div class="card call-detail-image-card">
+     <div class="call-detail-image">
+       <img src="${callImg}" alt="Мітинг із білявою начальницею о 09:00">
+       <button type="button"
+         class="call-detail-finish-hotspot"
+         aria-label="Завершити колл"
+         data-complete-call="1"
+         data-call-which="${which}"
+         data-call-id="${id}"></button>
+     </div>
+   </div>`);
+   const hotspot = screen.querySelector('.call-detail-finish-hotspot');
+   if(hotspot){
+     hotspot.addEventListener('click',(e)=>{
+       e.preventDefault();
+       e.stopPropagation();
+       completeCall(which,id);
+     });
+   }
+   return;
+ }
+ if(which==='morning' && id==='m2'){
+   const callImg='images/image_11.png';
+   render(`<div class="card call-detail-image-card">
+     <div class="call-detail-image call-detail-image-hotspot" role="button" tabindex="0" aria-label="Завершити колл" data-complete-call="1" data-call-which="${which}" data-call-id="${id}">
+       <img src="${callImg}" alt="Колл з італійцями о 10:15">
+     </div>
+   </div>`);
+   const hotspot = screen.querySelector('.call-detail-image-hotspot');
+   if(hotspot){
+     hotspot.addEventListener('click',(e)=>{e.preventDefault();e.stopPropagation();completeCall(which,id);},{once:true});
+     hotspot.addEventListener('keydown',(e)=>{if(e.key==='Enter' || e.key===' '){e.preventDefault();e.stopPropagation();completeCall(which,id);}},{once:true});
+   }
+   return;
+ }
+ if(which==='morning' && id==='m3'){
+   const callImg3='images/image_12.png';
+   render(`<div class="card call-detail-image-card">
+     <div class="call-detail-image call-detail-image-hotspot" role="button" tabindex="0" aria-label="Завершити колл" data-complete-call="1" data-call-which="${which}" data-call-id="${id}">
+       <img src="${callImg3}" alt="Мітинг 11:30 — Теорія відносності Flix">
+     </div>
+   </div>`);
+   const hotspot = screen.querySelector('.call-detail-image-hotspot');
+   if(hotspot){
+     hotspot.addEventListener('click',(e)=>{e.preventDefault();e.stopPropagation();completeCall(which,id);},{once:true});
+     hotspot.addEventListener('keydown',(e)=>{if(e.key==='Enter' || e.key===' '){e.preventDefault();e.stopPropagation();completeCall(which,id);}},{once:true});
+   }
+   return;
+ }
+ if(which==='morning' && id==='m4'){
+   const callImg4='images/image_13.png';
+   render(`<div class="card call-detail-image-card">
+     <div class="call-detail-image call-detail-image-hotspot" role="button" tabindex="0" aria-label="Завершити колл" data-complete-call="1" data-call-which="${which}" data-call-id="${id}">
+       <img src="${callImg4}" alt="Колл з італійцями о 12:15">
+     </div>
+   </div>`);
+   const hotspot = screen.querySelector('.call-detail-image-hotspot');
+   if(hotspot){
+     hotspot.addEventListener('click',(e)=>{e.preventDefault();e.stopPropagation();completeCall(which,id);},{once:true});
+     hotspot.addEventListener('keydown',(e)=>{if(e.key==='Enter' || e.key===' '){e.preventDefault();e.stopPropagation();completeCall(which,id);}},{once:true});
+   }
+   return;
+ }
+ render(`<div class="card">
+   <div class="art"><div class="turkey">🦃😔</div><span class="scene-label">💻 ${call[1]}</span></div>
+   <h2>${call[1]} — ${call[2]}</h2>
+   <p>${call[3]}</p>
+   <p><b>${call[4]}</b></p>
+   <p>🔴 CALL IN PROGRESS…</p>
+   <button class="next" type="button" data-complete-call="1" data-call-which="${which}" data-call-id="${id}">ЗАВЕРШИТИ КОЛЛ ✔️</button>
+ </div>`);
+}
+
+function completeCall(which,id){
+ const arr=which==='morning'?morningMeetings:afternoonMeetings;
+ const set=which==='morning'?S.morning:S.afternoon;
+ if(set.has(id))return;
+ set.add(id);
+ if(which==='morning' && set.size>=arr.length){ morningFinished(); return; }
+ if(which==='afternoon' && set.size>=arr.length){ finishWork(); return; }
+ renderCalls(which);
+}
+
+function finishWork(){ afterWorkDay(); }
+function morningFinished(){S.work==='home'?lunchHome():lunchOffice()}
+function lunchHome(){
+ setClock('13:00');
+ render(`<div class="card"><h2>🍽️ ОБІД</h2><p><b>Що сьогодні їмо?</b></p><div id="f"></div></div>`);
+ addButtons(document.getElementById('f'),[
+  ['🥚 ЗНОВУ ЯЄЧНЯ',()=>lunchConfirm('🥚')],
+  ['🐟 ЗНОВУ РИБА',()=>lunchConfirm('🐟')],
+  ['🍞 ЗНОВУ ХЛІБ',()=>lunchConfirm('🍞')]
+ ]);
+}
+function lunchOffice(){
+ setClock('13:00');
+ render(`<div class="card"><h2>🍽️ ОБІД В ОФІСІ</h2><p><b>Що сьогодні їмо?</b></p><div id="f"></div></div>`);
+ addButtons(document.getElementById('f'),[
+  ['🍌 Банан',()=>officeLunchConfirm('🍌')],
+  ['🥪 Лідл',()=>officeLunchConfirm('🥪')],
+  ['🥡 Азіатська їжа',()=>officeLunchConfirm('🥡')]
+ ]);
+}
+function lunchConfirm(emoji){
+ render(`<div class="card">
+   <div class="art"><div class="turkey">🦃😔</div><div class="food">${emoji}</div></div>
+   <h1>3 З ПОЛОВИНОЮ ХВИЛИНИ НА ЛАНЧ ВИЧЕРПАНО</h1>
+   <button class="next" id="homeLunchNext" type="button">ОЙ ЛІШЕНЬКО, ЗНОВУ ХТОСЬ ДЗВОНИТЬ!!!</button>
+ </div>`);
+ const b=document.getElementById('homeLunchNext');
+ if(b) b.addEventListener('click', function(e){
+   e.preventDefault();
+   e.stopPropagation();
+   afternoonWork();
+ });
+}
+function officeLunchConfirm(emoji){
+ setClock('13:05');
+ render(`<div class="card"><div class="art"><div class="turkey">🦃😔</div><div class="food">${emoji}</div></div>
+ <h1><s>ЧАС ПИТИ ПИВО</s></h1>
+ <button class="next" id="officeLunchNext" type="button">ПРИЙНЯТИ ЧЕРГОВИЙ КОЛ — ТИЦЬ</button></div>`);
+ const b=document.getElementById('officeLunchNext');
+ b.onclick=()=>{S.afternoon=new Set(); renderCalls('afternoon');};
+}
+function renderLaundryButtons(){
+ const box=document.getElementById('l');if(!box)return;box.innerHTML='';
+ [['machine','⬜ Завантажити пральну машину'],['hang','⬜ Розвісити білизну'],['sock','⬜ Знайти другу шкарпетку']].forEach(([id,t],i)=>{
+  const b=btn(`${i+1}/3 — `+(S.laundry.has(id)?'✅ ': '')+t,()=>{S.laundry.add(id);renderLaundryButtons();document.getElementById('ls').innerHTML=progress(S.laundry.size,3,'ПРАННЯ');if(S.laundry.size===3)setTimeout(afterWorkDay,300)},'meeting');b.disabled=S.laundry.has(id);box.appendChild(b)
+ });
+}
+function afterWorkDay(){setClock('18:30');postWork()}
+function postWork(){
+ const gymDays=['ВІВТОРОК','ЧЕТВЕР'];
+ if(gymDays.includes(S.day))gym();else eveningChoice();
+}
+function gym(){
+ setClock('19:00');S.gym=new Set();
+ render(`<div class="card"><h2>🏋️ ЧЕРГА ДО ЗАЛУ</h2><p>Перед тренуванням треба відстояти чергу.</p><button id="q" class="next">🏋️ ВІДСТОЯТИ У ЧЕРЗІ</button></div>`);
+ document.getElementById('q').onclick=gymStart;
+}
+function gymStart(){
+ setClock('19:15'); S.gym=new Set(); renderGym();
+}
+function renderGym(){
+ const tasks=[['run','🏃 Бігова доріжка'],['weights','🏋️ Гантелі'],['abs','💪 Прес']];
+ const inner=tasks.map(([id,t])=>`<button class="meeting quest-btn" data-gym="${id}" ${S.gym.has(id)?'disabled':''}>${S.gym.has(id)?'✅':'⬜'} ${t}</button>`).join('');
+ render(questLayout('🏋️ СПОРТЗАЛ','Виконай усі 3 вправи:',S.gym.size,3,'ТРЕНУВАННЯ',inner));
+ document.querySelectorAll('[data-gym]').forEach(b=>b.onclick=()=>{S.gym.add(b.dataset.gym);if(S.gym.size===3){render(`<div class="card"><h2>🏋️ ТРЕНУВАННЯ ЗАВЕРШЕНО</h2><button class="next" id="home">ТЕПЕР ЧАС ЙТИ ДОДОМУ</button></div>`);document.getElementById('home').onclick=dinner}else renderGym()});
+}
+
+function eveningChoice(){
+ render(`<div class="card"><h2>ЩО РОБИМО СЬОГОДНІ?</h2><div id="e"></div></div>`);
+ addButtons(document.getElementById('e'),[
+  ['🏠 Дімон',dimon],['🎤 Майка',maika],['👤 Микита — аферіст',mykyta],['🍽️ Вечеря',dinner]
+ ]);
+}
+function dimon(){
+ render(`<div class="card"><h2>🏠 ДІМОН</h2><p><b>Що обираємо?</b></p><div id="d"></div></div>`);
+ addButtons(document.getElementById('d'),[
+  ['📞 Колл із Дімоном',()=>dimonActivity('call')],
+  ['🚶 Прогулянка',()=>dimonActivity('walk')],
+  ['❌ Відмовитися',dinner]
+ ]);
+}
+function dimonActivity(kind){
+ if(kind==='walk'){
+  render(`<div class="card"><h2>🚶 ПРОГУЛЯНКА</h2><p>Ідемо гуляти.</p><button class="next" id="back">Я ТУТ — ТИЦЬКАЙ</button></div>`);
+  document.getElementById('back').onclick=()=>night();
+ }else{
+  render(`<div class="card"><h2>📞 КОЛЛ ІЗ ДІМОНОМ</h2><p>Колл із Дімоном завершено.</p><button class="next" id="dnext">ДАЛІ</button></div>`);
+  document.getElementById('dnext').onclick=dinner;
+ }
+}
+function maika(){
+ render(`<div class="card"><h2>🎤 МАЙКА</h2><div id="ma"></div></div>`);
+ addButtons(document.getElementById('ma'),[
+  ['🥗 Веганський ресторан',dinner],
+  ['🥗 Веганський ресторан',dinner],
+  ['🥗 Веганський ресторан',dinner]
+ ]);
+}
+function mykyta(){
+ render(`<div class="card"><h2>👤 МИКИТА — АФЕРІСТ</h2><p><b>Що обираємо?</b></p><div id="my"></div></div>`);
+ addButtons(document.getElementById('my'),[
+  ['🍺 Пиво Шпеті',()=>mykytaWarning('🍺 Пиво Шпеті')],
+  ['🍺 Пиво Сходинки',()=>mykytaWarning('🍺 Пиво Сходинки')],
+  ['🍺 Пиво — прокурений бар',()=>mykytaWarning('🍺 Пиво — прокурений бар')],
+  ['❌ Відмовитися',dinner]
+ ]);
+}
+function mykytaWarning(choice){
+ render(`<div class="card"><h2>${choice}</h2><div class="warning"><p>⚠️ <b>ОБЕРЕЖНО!</b></p><p>Можна прийти о 3 ночі <b>в гавно</b>.</p></div><button class="next" id="bad">→ 🌙 СОН</button></div>`);
+ document.getElementById('bad').onclick=night;
+}
+function dinner(){
+ setClock('20:30');
+ render(`<div class="card"><h2>🍽️ ВЕЧЕРЯ</h2><p><b>Що будемо їсти?</b></p><div id="df"></div></div>`);
+ addButtons(document.getElementById('df'),[
+  ['🥚 ЗНОВУ ЯЄЧНЯ',()=>dinnerFood('🥚')],
+  ['🐟 ЗНОВУ РИБА',()=>dinnerFood('🐟')],
+  ['🍞 ЗНОВУ ХЛІБ',()=>dinnerFood('🍞')]
+ ]);
+}
+function dinnerFood(emoji){
+ render(`<div class="card"><div class="art"><div class="turkey">🦃😔</div><div class="food">${emoji}</div></div><h1>ПОЇВ? МОЛОДЕЦЬ!</h1><button class="next" id="what">А ЩО ДАЛІ?</button></div>`);
+ document.getElementById('what').onclick=dinnerAfterFood;
+}
+function dinnerAfterFood(){
+ setClock('21:00');
+ render(`<div class="card"><div class="art"><div class="turkey">🦃</div><div style="position:absolute;right:17%;bottom:35px;font-size:110px">👩</div><div style="position:absolute;left:42%;bottom:125px;font-size:40px">💬</div></div><h1>ЧАС ЗУСТРІТИСЯ З ЛІСОЮ!</h1><div id="lm"></div></div>`);
+ addButtons(document.getElementById('lm'),[
+  ['💻 ЗУСТРІТИ ЛІСУ В НОУТІ',()=>lisaMeeting('laptop')],
+  ['🌳 ЗУСТРІТИ ЛІСУ В ПАРКУ',()=>lisaMeeting('park')]
+ ]);
+}
+function lisaMeeting(where){
+ const park=where==='park';
+ if(park){
+   render(`<div class="card"><div class="art"><span class="scene-label">🌳 ПАРК</span></div>
+   <h1>ЛІСА ДЕСЬ ТУТ…</h1>
+   <p>🦃 Індик шукає Лісу, а вона ховається та каже: «БЕ-БЕ-БЕ 😜»</p>
+   <button class="next" id="parkNext" type="button">ЛІСУ НЕ ЗНАЙШОВ — ДОДОМУ ПІШОВ</button></div>`);
+   document.getElementById('parkNext').onclick=()=>restChoice(true);
+   return;
+ }
+ document.querySelector('.top').style.display='none';
+ render(`<div class="card laptop-scene-card">
+   <div class="laptop-scene">
+     <img src="images/image_14.png" alt="Індик сидить за ноутбуком і дивиться сайт Slowfoxes">
+     <button class="image-hotspot" id="slowfoxesNext" type="button" aria-label="Втомився відпочивати? Давай!"></button>
+   </div>
+ </div>`);
+ document.getElementById('slowfoxesNext').onclick=()=>{
+   document.querySelector('.top').style.display='flex';
+   restChoice(false);
+ };
+}
+function restChoice(){
+ setClock('21:30');
+ render(`<div class="card"><h2>📱 ВІДПОЧИНОК</h2><p>Що робимо?</p><div id="r"></div></div>`);
+ const items=[['📺 МАЙСТЕР ШЕФ',night],['📰 НОВИНИ',night],['🐈 КОТИКИ',night]];
+ if(S.fox==='park')items.push(['🦊 SLOWFOXES',night]);
+ addButtons(document.getElementById('r'),items);
+}
+function night(){
+ setClock('00:50');
+ render(`<div class="card"><div class="art"><span class="scene-label">🌙 00:50</span><div class="turkey">🦃😱</div></div><h1>ВЖЕ 00:50!</h1><p><b>ДЕНЬ ДАВНО ЗАКІНЧИВСЯ.</b></p><p>Терміново потрібно вкласти індика спати!</p><button class="next" id="sleepStart">ТЕРМІНОВО ВКЛАСТИ ІНДИКА СПАТИ</button></div>`);
+ document.getElementById('sleepStart').onclick=sleepQuest;
+}
+function sleepQuest(){
+ S.sleep=new Set();
+ renderSleep();
+}
+function renderSleep(){
+ const tasks=[['teeth','🪥 Почистити зуби'],['alarm','⏰ Поставити будильник'],['light','💡 Вимкнути світло']];
+ const inner=tasks.map(([id,t])=>`<button class="meeting quest-btn" data-sleep="${id}" ${S.sleep.has(id)?'disabled':''}>${S.sleep.has(id)?'✅':'⬜'} ${t}</button>`).join('');
+ render(questLayout('🌙 ПІДГОТОВКА ДО СНУ','Виконай усі 3 справи:',S.sleep.size,3,'СОН',inner));
+ document.querySelectorAll('[data-sleep]').forEach(b=>b.onclick=()=>{S.sleep.add(b.dataset.sleep);if(S.sleep.size===3){render(`<div class="card"><div class="art"><div class="turkey">🦃💤</div></div><h1>ТЕПЕР СПАТИ</h1><button class="next" id="sleepNow">А ТЕПЕР СПАТИ</button></div>`);document.getElementById('sleepNow').onclick=daySummary}else renderSleep()});
+}
+
+function daySummary(){
+ setClock('00:55');
+ render(`<div class="card center">
+   <div class="art"><div class="turkey">🦃💤</div></div>
+   <h1>🌙 ДЕНЬ ЗАВЕРШЕНО!</h1>
+   <div class="summary">
+     <p>Робота ✔️</p>
+     <p>Прання ✔️</p>
+     <p>Вечеря» ✔️</p>
+     <p>"Відпочинок" ✔️</p>
+   </div>
+   <p><b>Ти прожив ще один «абсолютно звичайний день».</b></p>
+   <p>…чи ні? 🦃</p>
+   <button class="next" id="summaryNext">?</button>
+ </div>`);
+ document.getElementById('summaryNext').onclick=surprise;
+}
+function surprise(){
+ render(`<div class="card center">
+   <div class="art"><div class="turkey">🦃😏</div></div>
+   <h1>ТИ ДУМАВ, ЦЕ БУВ ПРОСТО ЗВИЧАЙНИЙ ДЕНЬ?</h1>
+   <button class="next" id="know">ДІЗНАТИСЯ</button>
+ </div>`);
+ document.getElementById('know').onclick=notNormal;
+}
+function notNormal(){
+ render(`<div class="card center">
+   <div class="art"><div class="turkey">🦃🎉</div></div>
+   <h1>А ОСЬ І НІ!</h1>
+   <p><b>Сьогодні день зовсім не звичайний.</b></p>
+   <h2>І ЗНАЄШ ЧОМУ?</h2>
+   <button class="next" id="whyBirthday">ДІЗНАТИСЯ</button>
+ </div>`);
+ document.getElementById('whyBirthday').onclick=birthday;
+}
+function birthday(){
+ render(`<div class="card center">
+   <div class="art"><div class="big">🦃🎂🎉</div></div>
+   <h1>ТОМУ ЩО У ТЕБЕ СЬОГОДНІ ДЕНЬ НАРОДЖЕННЯ!</h1>
+   <button class="next" id="birthdayWhat">І ШО?</button>
+ </div>`);
+ document.getElementById('birthdayWhat').onclick=birthdayGift;
+}
+function birthdayGift(){
+ render(`<div class="card center">
+   <div class="art"><div class="big">🦃🎁</div></div>
+   <h1>НА ТЕБЕ ЧЕКАЄ ПОДАРУНОК</h1>
+   <button class="next" id="gift">ДАВАЙ ВЖЕ ЙОГО СЮДИ</button>
+ </div>`);
+ document.getElementById('gift').onclick=finalGift;
+}
+function finalGift(){
+ document.querySelector('.top').style.display='none';
+ setClock('');
+ render(`<div class="card center">
+   <div class="art"><div class="big">🦃🎁</div></div>
+   <h1>НА ТЕБЕ ЧЕКАЄ ПОДАРУНОК</h1>
+   <a class="next" href="#gift-placeholder" id="giftLink" style="display:block;text-decoration:none">ДАВАЙ ВЖЕ ЙОГО СЮДИ</a>
+ </div>`);
+}
+
+calendar();
+</script>
+</body>
+</html>
